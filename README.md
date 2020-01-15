@@ -8,8 +8,8 @@ Launcher pour le jeu Dark Age of Camelot (plus particulièrement, le serveur [Am
 
 ## Compilation
 *Vous aurez besoin de `cython3` et `gcc`*
-- `cython3 AmtenaelLauncher.py -o AmtenaelLauncher.c --embed`
-- `gcc -Os -I /usr/include/python3.6m AmtenaelLauncher.c -o AmtenaelLauncher -lpython3.6m -lpthread -lm -lutil -ldl` (il vous faudra peut-etre chercher l'équivalent `/usr/include/python3.*m` a votre distribution)
+- `make`
+- `make clean`
 
 ## Pré-requis
 - [Wine](https://winehq.org)
