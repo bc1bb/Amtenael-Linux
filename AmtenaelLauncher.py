@@ -3,6 +3,7 @@
 # L'objectif est de mimer le comportement de Patcher.exe, le launcher Windows de Amtenael
 from hashlib import md5
 # import de la verification de hash md5
+import os
 
 try:
     import requests
@@ -26,6 +27,7 @@ except FileNotFoundError:
     exit(-1)
 
 version = "1.0"
+# Utile uniquement pour le User-Agent
 
 
 class CheckFiles:
@@ -51,7 +53,8 @@ class CheckFiles:
                 localhash = md5(open(filename, "rb").read()).hexdigest()
             except FileNotFoundError:
                 localhash = 0
-                # dans le cas ou le fichier n'existe pas
+                # dans le cas ou le fichier n'existe pas, on met le hash a une valeur de merde
+                # pour faire rater le check dans tous les cas
 
             if hash == localhash:
                 print(filename, "est correct")
@@ -75,25 +78,41 @@ class AmtenaelLauncher:
         master.resizable(False, False)
         # creation d'une fenetre 200x300 qui ne peut pas changer de taille
 
-        self.username = Entry(master, width=15)
-        self.username.pack()
-        # creation d'un Entry de 15px pour le username
+        self.fucktkinter0 = Label(master)
+        # pour faire de la place 0
 
-        self.password = Entry(master, show="•", width=15)
-        self.password.pack()
-        # creation d'un Entry de 15 pour le password qui n'affiche que des "•"
+        self.username = Entry(master)
+        # creation d'un Entry pour le username
+
+        self.fucktkinter = Label(master, text="")
+        # pour faire de la place
+
+        self.password = Entry(master, show="•")
+        # creation d'un Entry pour le password qui n'affiche que des "•"
+
+        self.fucktkinter2 = Label(master, text="")
+        # pour faire de la place 2
 
         self.greet_button = Button(master, text="Connexion", command=self.connect)
-        self.greet_button.pack()
         # bouton de connexion qui appelle la fonction connect()
 
+        self.fucktkinter0.pack()
+        self.username.pack()
+        self.fucktkinter.pack()
+        self.password.pack()
+        self.fucktkinter2.pack()
+        self.greet_button.pack()
+        # On pack tout
+
     def connect(self):
-        print(self.username.get() + self.password.get())
+        print("Connexion avec", self.username.get(), "sur Amtenael")
+        os.system("wine connect.exe game.dll game.amtenael.fr "+self.username.get()+" "+self.password.get())
 
 
-# CheckFiles()
+CheckFiles()
 # Verifions les fichiers avant d'afficher le launcher
 
 root = Tk()
 window = AmtenaelLauncher(root)
 root.mainloop()
+# On lance la fenetre
