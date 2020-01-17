@@ -8,7 +8,7 @@ import os
 try:
     import requests
 except ImportError:
-    print("Erreur a l'import de requets, Est-il installé ?")
+    print("Erreur a l'import de requests, Est-il installé ?")
     exit(-1)
 
 try:
@@ -22,12 +22,10 @@ try:
     open("game.dll").close()
     # On essaie d'ouvrir le fichier game.dll et de le refermer pour voir si il existe (installation valide ou pas)
 except FileNotFoundError:
-    print(
-        "On dirait que AmtenaelLauncher n'est pas dans un dossier avec une installation valide de Dark Age of Camelot")
+    print("On dirait que AmtenaelLauncher n'est pas dans un dossier avec une installation valide de Dark Age of Camelot")
     exit(-1)
 
-version = "1.0"
-# Utile uniquement pour le User-Agent
+version = "1.1"
 
 
 class CheckFiles:
@@ -73,13 +71,21 @@ class CheckFiles:
 class AmtenaelLauncher:
     def __init__(self, master):
         self.master = master
-        master.title("AmtenaelLauncher")
-        master.minsize(200, 300)
+        master.title("AmtenaelLauncher "+version)
+        master.minsize(200, 350)
         master.resizable(False, False)
-        # creation d'une fenetre 200x300 qui ne peut pas changer de taille
+        # creation d'une fenetre 200x350 qui ne peut pas changer de taille
+
+        self.fucktkinterlol = Label(master)
+        # pour faire de la place
+
+        self.serveraddr = StringVar()
+        self.server = Entry(master, state="disabled", textvariable=self.serveraddr)
+        self.serveraddr.set("game.amtenael.fr")
+        # creation d'un Entry pour l'addresse du serveur (non changeable mais present)
 
         self.fucktkinter0 = Label(master)
-        # pour faire de la place 0
+        # pour faire de la place
 
         self.username = Entry(master)
         # creation d'un Entry pour le username
@@ -91,22 +97,24 @@ class AmtenaelLauncher:
         # creation d'un Entry pour le password qui n'affiche que des "•"
 
         self.fucktkinter2 = Label(master, text="")
-        # pour faire de la place 2
+        # pour faire de la place
 
-        self.greet_button = Button(master, text="Connexion", command=self.connect)
+        self.connect_button = Button(master, text="Connexion", command=self.connect)
         # bouton de connexion qui appelle la fonction connect()
 
+        self.fucktkinterlol.pack()
+        self.server.pack()
         self.fucktkinter0.pack()
         self.username.pack()
         self.fucktkinter.pack()
         self.password.pack()
         self.fucktkinter2.pack()
-        self.greet_button.pack()
+        self.connect_button.pack()
         # On pack tout
 
     def connect(self):
         print("Connexion avec", self.username.get(), "sur Amtenael")
-        os.system("wine connect.exe game.dll game.amtenael.fr "+self.username.get()+" "+self.password.get())
+        os.system("wine connect.exe game.dll "+self.server.get()+" "+self.username.get()+" "+self.password.get())
 
 
 CheckFiles()
