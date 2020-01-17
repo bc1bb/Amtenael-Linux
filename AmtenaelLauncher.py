@@ -25,7 +25,7 @@ except FileNotFoundError:
     print("On dirait que AmtenaelLauncher n'est pas dans un dossier avec une installation valide de Dark Age of Camelot")
     exit(-1)
 
-version = "1.1"
+version = "1.2"
 
 
 class CheckFiles:
@@ -87,13 +87,15 @@ class AmtenaelLauncher:
         self.fucktkinter0 = Label(master)
         # pour faire de la place
 
-        self.username = Entry(master)
+        self.usernamevar = StringVar()
+        self.username = Entry(master, textvariable=self.usernamevar)
         # creation d'un Entry pour le username
 
         self.fucktkinter = Label(master, text="")
         # pour faire de la place
 
-        self.password = Entry(master, show="•")
+        self.passwordvar = StringVar()
+        self.password = Entry(master, show="•", textvariable=self.passwordvar)
         # creation d'un Entry pour le password qui n'affiche que des "•"
 
         self.fucktkinter2 = Label(master, text="")
@@ -101,6 +103,10 @@ class AmtenaelLauncher:
 
         self.connect_button = Button(master, text="Connexion", command=self.connect)
         # bouton de connexion qui appelle la fonction connect()
+
+        self.rememberpasswordvar = IntVar()
+        self.rememberpassword = Checkbutton(master, text="Se souvenir des identifiants ?", var=self.rememberpasswordvar)
+        # Bouton pour savoir si on mémorise le user/mdp
 
         self.fucktkinterlol.pack()
         self.server.pack()
@@ -112,15 +118,31 @@ class AmtenaelLauncher:
         self.connect_button.pack()
         # On pack tout
 
+        self.checkCreds()
+
     def connect(self):
         print("Connexion avec", self.username.get(), "sur Amtenael")
         os.system("wine connect.exe game.dll "+self.server.get()+" "+self.username.get()+" "+self.password.get())
 
 
-CheckFiles()
-# Verifions les fichiers avant d'afficher le launcher
+    def checkCreds(self):
+        try:
+            with open('launcher.dat') as f:
+                lines = f.read().splitlines()
+                self.usernamevar.set(lines[1])
+                self.passwordvar.set(lines[2])
+                print("Mot de passe pour", lines[1], "trouvé")
+                self.rememberpassword.toggle()
+                f.close()
+        except FileNotFoundError or KeyError:
+            print("Aucun mot de passe enregistré")
+try:
+    CheckFiles()
+    # Verifions les fichiers avant d'afficher le launcher
 
-root = Tk()
-window = AmtenaelLauncher(root)
-root.mainloop()
-# On lance la fenetre
+    root = Tk()
+    window = AmtenaelLauncher(root)
+    root.mainloop()
+    # On lance la fenetre
+except KeyboardInterrupt:
+    exit(0)
