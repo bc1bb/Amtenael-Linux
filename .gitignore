@@ -1,2 +1,6 @@
 venv/
 # ignore PyCharm's venv
+
+# compiled things
+AmtenaelLauncher.c
+AmtenaelLauncher
