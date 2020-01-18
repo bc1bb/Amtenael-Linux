@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# Jus de Patate - configure pour AmtenaelLauncher-linux
+# https://github.com/jusdepatate/amtenael-linux | https://git.beefs.tech/jusdepatate/amtenael-linux
+
+fatal() {
+	echo "$*"
+	exit 1
+}
+
+if [ "$(python -V | grep "3\..*\..*")" ]; then
+  echo "L'executable de python 3.x est python"
+  python="python"
+elif [ "$(python3 -V | grep "3\..*\..*")" ]; then
+  echo "L'executable de python 3.x est python3"
+  python="python3"
+# on vérifie quel executable dans le PATH donne Python 3.x
+else
+  fatal "ERREUR: il semble que python 3.x n'est pas installé"
+fi
+
+HEADERS=$($python -c "import distutils.sysconfig; print(distutils.sysconfig.get_config_vars()['INCLUDEPY'])")
+MINIVERSION=$($python -V | grep -o "3\.[0-9]")
+# on créé des variables pour le makefile
+
+if [ ! -f "${HEADERS}/Python.h" ]; then
+	fatal "ERREUR: python-devel n'est pas installé"
+	# si la variable HEADERS ne pointe pas vers un dossier avec un fichier Python.h alors Python-devel n'est pas installé
+else
+	echo "python-devel est installé"
+fi
+
+if [ ! "$(cython3 --help 2>/dev/null)" ]; then
+  fatal "ERREUR: cython3 n'est pas installé"
+  # pour compiler on utilise cython3, il est donc requis de verifier sa présence
+else
+  echo "cython3 est installé"
+fi
+
+if [ ! "$(gcc --help 2>/dev/null)" ]; then
+  fatal "ERREUR: gcc n'est pas installé"
+  # pour compiler on peut utiliser autre chose que gcc, mais seul lui est supporté
+else
+  echo "gcc est installé"
+fi
+
+echo "Génération du Makefile"
+
+touch Makefile
+echo "AmtenaelLauncher: AmtenaelLauncher.c
+	gcc -Os -I ${HEADERS} AmtenaelLauncher.c -o AmtenaelLauncher -lpython${MINIVERSION}m -lpthread -lm -lutil -ldl
+
+AmtenaelLauncher.c: AmtenaelLauncher.py
+	cython3 AmtenaelLauncher.py -o AmtenaelLauncher.c --embed
+
+clean:
+	rm -f AmtenaelLauncher.c" > Makefile
+# place a la génération (c'est sale comme facon de faire)
