@@ -18,6 +18,18 @@ else
   fatal "ERREUR: il semble que python 3.x n'est pas installé"
 fi
 
+if [ "$($python -c "import tkinter")" ]; then
+  fatal "tkinter n'est pas installé"
+else
+  echo "tkinter est correctement installé"
+fi
+
+if [ "$($python -c "import requests")" ]; then
+  fatal "requests n'est pas installé"
+else
+  echo "requests est correctement installé"
+fi
+
 HEADERS=$($python -c "import distutils.sysconfig; print(distutils.sysconfig.get_config_vars()['INCLUDEPY'])")
 MINIVERSION=$($python -V | grep -o "3\.[0-9]")
 # on créé des variables pour le makefile

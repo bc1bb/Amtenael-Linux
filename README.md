@@ -8,6 +8,7 @@ Launcher pour le jeu Dark Age of Camelot (plus particulièrement, le serveur [Am
 
 ## Compilation
 *Vous aurez besoin de `cython3` et `gcc`*
+- `./configure`
 - `make`
 - `make clean`
 
