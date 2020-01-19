@@ -136,15 +136,17 @@ class AmtenaelLauncher:
         self.token = "AmtenaelLinux"  # on prépare la variable qui sera modifié pendant preconnect()
 
         self.checkCreds()  # on verifie que les identifiants ne sont pas sauvegardé
-        self.preconnect()  # peupler charList avant d'afficher la fenetre
+        self.preconnect("login")  # peupler charList avant d'afficher la fenetre
         self.charList.insert(0, "Selection de royaume")  # On ajoute la premiere ligne
+        self.password.bind('<Return>', self.preconnect)  # On dit a tkinter que si un utilisateur appuie sur <Return> (entrée), le quicklogin se lance
 
     def connect(self):
         try:
             charListSelect = self.charList.get(self.charList.curselection())
         except TclError:
             charListSelect = "Selection de royaume"
-        # Ici on récupere la selection de l'utilisateur, si il n'a rien selectionné on l'ennemene a la selection de royaume
+        # Ici on récupere la selection de l'utilisateur,
+        # si il n'a rien selectionné on l'ennemene a la selection de royaume
 
         if self.username.get() != "" and self.password.get() != "":
             print("Connexion avec", self.username.get(), "sur Amtenael")
@@ -163,7 +165,14 @@ class AmtenaelLauncher:
         else:
             messagebox.showerror("Erreur", "Veuillez rentrer un nom d'utilisateur et un mot de passe")
 
-    def preconnect(self):
+    def preconnect(self, event):
+        # on est obligé d'indiquer que preconnect() prend un deuxieme argument parce que tkinter donne 2 arguments a
+        # chaque fois que l'on appuie sur <return>
+
+        while self.charList.get(1) != "":
+            self.charList.delete(END)
+        # ici on clean charList pour le re-remplir juste apres
+
         if self.username.get() != "" and self.password.get() != "":
             nl = "\n"
             uniqueId="AmtenaelLauncher-linux\\"+version
@@ -192,7 +201,28 @@ class AmtenaelLauncher:
             s.close()
             # et on oublie pas de fermer la connection et on va s'en servir pour remplir le widget charList
 
+            if char[0].startswith("error:"):
+                messagebox.showwarning("Erreur", "Réponse du serveur:\n"+char[0])
+                return False
+            # dans le cas ou le serveur nous renvoie une erreur, abandonner ici
+
             self.token = char[0]  # on a besoin de la premiere ligne pour se connecter plus tard
+
+            with open("launcher.dat", "r") as f:
+                lines = f.read().splitlines()
+                lines[0] = self.token
+                f.close()
+            with open("launcher.dat", "w") as f:
+                i = 1
+                f.writelines(lines[0]+"\n")
+                while i < len(lines):
+                    f.writelines(lines[i]+"\n")
+                    i+=1
+                f.close()
+            # on lit launcher.dat, si il y a deja du contenu dedans (token\nnom d'utilisateur\nmot de passe)
+            # on modifie la premiere ligne (le token) en ajoutant le nouveau token de connexion
+            # (un nouveau token par preconnect())
+
             i = 1  # ignorer la premiere ligne
             while i < len(char):
                 self.charList.insert(i, char[i])
@@ -208,7 +238,7 @@ class AmtenaelLauncher:
                 print("Mot de passe pour", lines[1], "trouvé")
                 # self.rememberpassword.toggle()
                 f.close()
-        except FileNotFoundError or KeyError:
+        except (FileNotFoundError, KeyError, IndexError):
             print("Aucun mot de passe enregistré")
 
 
