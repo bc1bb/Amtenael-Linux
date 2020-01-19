@@ -1,7 +1,13 @@
-# ignore PyCharm's venv
+# ignorer le venv de PyCharm
 venv/
 
-# ignore make+compiled things
+# ignorer les fichiers créé après une compilation sous Linux
 AmtenaelLauncher.c
 AmtenaelLauncher
 Makefile
+
+# ignorer les fichiers créé après une compilation sous Windows
+dist/
+build/
+__pycache__/
+AmtenaelLauncher.spec
