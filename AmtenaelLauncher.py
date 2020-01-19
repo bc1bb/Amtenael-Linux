@@ -5,6 +5,7 @@ from hashlib import md5
 # import de la verification de hash md5
 import os
 import socket
+import json
 
 try:
     import requests
@@ -31,12 +32,12 @@ version = "1.4"
 
 
 class CheckFiles:
+    headers = {
+        'User-Agent': "AmtenaelLauncher-linux/" + version,
+    }
     def __init__(self):
-        headers = {
-            'User-Agent': "AmtenaelLauncher-linux/" + version,
-        }
 
-        files = requests.get("https://amtenael.fr/launcher/launcher.txt", headers=headers)
+        files = requests.get("https://amtenael.fr/launcher/launcher.txt", headers=self.headers)
         filesstr = files.text
         # maintenant on a le fichier qui nous indique quel fichier verifier
 
@@ -85,8 +86,17 @@ class AmtenaelLauncher:
         master.tk.call('wm', 'iconphoto', root._w, icon)
         # maintenant on dit a tkinter que icon_b64 est l'icon de la fenetre
 
-        self.fucktkinterlol = Label(master)
-        # pour faire de la place
+        url = "https://server1.amtenael.fr/json.php"
+        connected_json = requests.get(url, headers=CheckFiles.headers)
+        # on recupere les informations depuis amtenael avec les meme headers que pour verifier les fichiers
+        connected_parsed = json.loads(connected_json.text)
+        connected = connected_parsed["account"]["connected"]
+        # maintenant on prends le nombre de gens connecté on met dans la variable connected
+
+        self.connected_ppl = StringVar()
+        self.connected_ppl.set(connected+" personnages connectés")
+        self.fucktkinterlol = Label(master, textvariable=self.connected_ppl)
+        # et on met le nombre de gens connecté dans le label qui servai a faire de la place avant :D (ce qui explique son nom)
 
         self.serveraddr = StringVar()
         self.server = Entry(master, state="disabled", textvariable=self.serveraddr)
