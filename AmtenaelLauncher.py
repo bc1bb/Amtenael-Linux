@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# coding=utf-8
 # Jus de Patate | Aingeth - 2020
 # L'objectif est de mimer le comportement de Patcher.exe, le launcher Windows de Amtenael
 from hashlib import md5
@@ -6,6 +7,7 @@ from hashlib import md5
 import os
 import socket
 import json
+from platform import system
 
 try:
     import requests
@@ -123,11 +125,11 @@ class AmtenaelLauncher:
         self.connect_button = Button(master, text="Connexion", command=self.connect)
         # bouton de connexion qui appelle la fonction connect()
 
-        # self.rememberpasswordvar = IntVar()
-        # self.rememberpassword = Checkbutton(master, text="Se souvenir des identifiants ?", var=self.rememberpasswordvar)
-        # self.rememberpassword.configure(state='normal')
+        self.rememberpasswordvar = BooleanVar()
+        self.rememberpassword = Checkbutton(master, text="Se souvenir des identifiants ?", var=self.rememberpasswordvar)
+        self.rememberpassword.configure(state='normal')
         # Bouton pour savoir si on mémorise le user/mdp
-        # les checkbutton ne fonctionnent pas sur ma machine de test, cette fonctionnalité attendra (désolé :p) TODO
+        # les checkbutton ne fonctionnent pas sur ma machine de test, cette fonctionnalité attendra (désolé :p)
 
         self.charList = Listbox(master)
 
@@ -139,7 +141,7 @@ class AmtenaelLauncher:
         self.password.pack()
         self.fucktkinter2.pack()
         self.connect_button.pack()
-        # self.rememberpassword.pack()
+        self.rememberpassword.pack()
         self.charList.pack()
         # On pack tout
 
@@ -162,16 +164,23 @@ class AmtenaelLauncher:
             print("Connexion avec", self.username.get(), "sur Amtenael")
 
             if charListSelect == "Selection de royaume":
-                os.system("wine connect.exe game.dll " + self.server.get() + " " + self.username.get() + " " + self.password.get())
+                self.startGame("connect.exe game.dll " + self.server.get() + " " + self.username.get() + " " + self.password.get())
             else:
-                os.system("wine connect.exe game.dll " + self.server.get() + " " + self.username.get() + " " + self.token + " " + charListSelect)
-            # Ici on execute connect.exe (avec wine) sois vers la selection du royaume soit en connexion directe sur un personnage
+                self.startGame("connect.exe game.dll " + self.server.get() + " " + self.username.get() + " " + self.token + " " + charListSelect)
+            # Ici on execute connect.exe sois vers la selection du royaume soit en connexion directe sur un personnage
 
-            # if self.rememberpasswordvar.get() == 1:
-            #     with open("launcher.dat", "a") as f:
-            #         f.write("AmtenaelLauncher-linux\n"+self.username.get()+"\n"+self.password.get()+"\n")
-            #         # sauvegarder les identifiants
-            #         f.close()
+            if self.rememberpasswordvar.get():
+                with open("launcher.dat", "w") as f:
+                    i = 0
+                    lines = [
+                        self.token,
+                        self.username.get(),
+                        self.password.get()
+                    ]
+                    while i < len(lines):
+                        f.writelines(lines[i] + "\n")
+                        i += 1
+                    f.close()
         else:
             messagebox.showerror("Erreur", "Veuillez rentrer un nom d'utilisateur et un mot de passe")
 
@@ -238,6 +247,13 @@ class AmtenaelLauncher:
                 self.charList.insert(i, char[i])
 
                 i+=1
+
+    def startGame(self, command):
+        if system() == "Windows":
+            os.system(command)
+        else:
+            os.system("wine "+command)
+    # si l'utilisateur a Windows, alors executer la commande, sinon utiliser wine pour executer la commande
 
     def checkCreds(self):
         try:
