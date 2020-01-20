@@ -206,7 +206,13 @@ class AmtenaelLauncher:
 
         if self.username.get() != "" and self.password.get() != "":
             nl = "\n"
-            uniqueId="AmtenaelLauncher-linux\\"+version
+
+            try:
+                uniqueId=open("/etc/machine-id").read().split("\n")[0]
+            except:
+                print("Impossible de lire machine-id pour que le serveur identifie le client")
+                uniqueId="AmtenaelLauncher-linux\\"+version
+
             tosend = self.username.get().encode("utf-8") + nl.encode("utf-8") + self.password.get().encode("utf-8") + \
                      nl.encode("utf-8") + uniqueId.encode("utf-8") + nl.encode("utf-8")
             # ici nous preparons la requete a faire au serveur
@@ -216,7 +222,7 @@ class AmtenaelLauncher:
             # la requete doit ressembler a ca:
             # {Nom d'utilisateur}\n
             # {Mot de passe}\n
-            # {Identifiant Unique}\n (sur windows il est constitué de l'identifiant du processeur+identifiant du disque dur)
+            # {Identifiant Unique}\n (Sur le launcher officiel il est fait d'identifiants de disque dur + CPU, et sur ce launcher, il est constitué du machine id)
             #
             # et la reponse ressemble a ceci:
             # {token} (permet la connection direct a un personnage et remplace le mot de passe dans ce cas)
