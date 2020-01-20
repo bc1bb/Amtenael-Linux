@@ -30,7 +30,7 @@ except FileNotFoundError:
     print("On dirait que AmtenaelLauncher n'est pas dans un dossier avec une installation valide de Dark Age of Camelot")
     exit(-1)
 
-version = "1.4"
+version = "1.5"
 
 
 class CheckFiles:
@@ -122,6 +122,12 @@ class AmtenaelLauncher:
         self.fucktkinter2 = Label(master, text="")
         # pour faire de la place
 
+        if system() == "Linux":
+            self.winecfg_button = Button(master, text="winecfg", command=self.winecfg)
+            self.fucktkinter99 = Label(master)
+        # On ajoute un bouton de configuration Wine si le client utilise Linux
+        # system() = platform.system()
+
         self.connect_button = Button(master, text="Connexion", command=self.connect)
         # bouton de connexion qui appelle la fonction connect()
 
@@ -129,7 +135,6 @@ class AmtenaelLauncher:
         self.rememberpassword = Checkbutton(master, text="Se souvenir des identifiants ?", var=self.rememberpasswordvar)
         self.rememberpassword.configure(state='normal')
         # Bouton pour savoir si on mémorise le user/mdp
-        # les checkbutton ne fonctionnent pas sur ma machine de test, cette fonctionnalité attendra (désolé :p)
 
         self.charList = Listbox(master)
 
@@ -140,7 +145,14 @@ class AmtenaelLauncher:
         self.fucktkinter.pack()
         self.password.pack()
         self.fucktkinter2.pack()
-        self.connect_button.pack()
+        if system() == "Linux":
+            self.fucktkinter99.pack()
+            self.winecfg_button.place(x=10, y=140)
+            self.connect_button.place(x=110, y=140)
+        else:
+            self.connect_button.pack()
+        # si l'utilisateur utilise Linux on ajoute un label pour faire de la place, et 2 boutons (connect, winecfg)
+        # sinon on pack normalement le bouton connect
         self.rememberpassword.pack()
         self.charList.pack()
         # On pack tout
@@ -254,6 +266,9 @@ class AmtenaelLauncher:
         else:
             os.system("wine "+command)
     # si l'utilisateur a Windows, alors executer la commande, sinon utiliser wine pour executer la commande
+
+    def winecfg(self):
+        os.system("winecfg")
 
     def checkCreds(self):
         try:
