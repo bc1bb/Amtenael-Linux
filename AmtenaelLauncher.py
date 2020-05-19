@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 # coding=utf-8
 # Jus de Patate | Aingeth - 2020
-# L'objectif est de mimer le comportement de Patcher.exe, le launcher Windows de Amtenael
+# L'objectif est de mimer le comportement du launcher officiel (disponible uniquement sur Windows) de Amtenael
 from hashlib import md5
 # import de la verification de hash md5
 import os
 import socket
 import json
 from platform import system
+import threading
 
 try:
     import requests
@@ -32,45 +33,9 @@ except FileNotFoundError:
 
 version = "1.5"
 
-
-class CheckFiles:
-    headers = {
-        'User-Agent': "AmtenaelLauncher-linux/" + version,
-    }
-    def __init__(self):
-
-        files = requests.get("https://amtenael.fr/launcher/launcher.txt", headers=self.headers)
-        filesstr = files.text
-        # maintenant on a le fichier qui nous indique quel fichier verifier
-
-        i = 0
-        while i < len(filesstr.splitlines()):
-            # je sais que ca pourrais etre plus simple avec une boucle for mais j'aime pas ca ><
-            line = filesstr.splitlines()[i].split(";")
-
-            filename = line[0]
-            url = line[1]
-            hash = line[2]
-
-            try:
-                localhash = md5(open(filename, "rb").read()).hexdigest()
-            except FileNotFoundError:
-                localhash = 0
-                # dans le cas ou le fichier n'existe pas, on met le hash a une valeur de merde
-                # pour faire rater le check dans tous les cas
-
-            if hash == localhash:
-                print(filename, "est correct")
-                # debug mais on va y laisser la :p
-            else:
-                print(filename, "n'est pas correct, téléchargement en cours...")
-                newfile = requests.get(url)
-
-                with open(filename, "wb") as localfile:
-                    localfile.write(newfile.content)
-                    # telechargement du nouveau fichier
-
-            i += 1
+curlheader = {
+    'User-Agent': "AmtenaelLauncher-linux/" + version,
+}
 
 
 class AmtenaelLauncher:
@@ -89,7 +54,7 @@ class AmtenaelLauncher:
         # maintenant on dit a tkinter que icon_b64 est l'icon de la fenetre
 
         url = "https://server1.amtenael.fr/json.php"
-        connected_json = requests.get(url, headers=CheckFiles.headers)
+        connected_json = requests.get(url, headers=curlheader, verify=False)
         # on recupere les informations depuis amtenael avec les meme headers que pour verifier les fichiers
         connected_parsed = json.loads(connected_json.text)
         connected = connected_parsed["account"]["connected"]
@@ -97,7 +62,7 @@ class AmtenaelLauncher:
 
         self.connected_ppl = StringVar()
         self.connected_ppl.set(connected+" personnages connectés")
-        self.fucktkinterlol = Label(master, textvariable=self.connected_ppl)
+        self.connected_ppllabel = Label(master, textvariable=self.connected_ppl)
         # et on met le nombre de gens connecté dans le label qui servai a faire de la place avant :D (ce qui explique son nom)
 
         self.serveraddr = StringVar()
@@ -105,22 +70,13 @@ class AmtenaelLauncher:
         self.serveraddr.set("game.amtenael.fr")
         # creation d'un Entry pour l'addresse du serveur (non changeable mais present)
 
-        self.fucktkinter0 = Label(master)
-        # pour faire de la place
-
         self.usernamevar = StringVar()
         self.username = Entry(master, textvariable=self.usernamevar)
         # creation d'un Entry pour le username
 
-        self.fucktkinter = Label(master, text="")
-        # pour faire de la place
-
         self.passwordvar = StringVar()
         self.password = Entry(master, show="•", textvariable=self.passwordvar)
         # creation d'un Entry pour le password qui n'affiche que des "•"
-
-        self.fucktkinter2 = Label(master, text="")
-        # pour faire de la place
 
         if system() == "Linux":
             self.winecfg_button = Button(master, text="winecfg", command=self.winecfg)
@@ -132,29 +88,25 @@ class AmtenaelLauncher:
         # bouton de connexion qui appelle la fonction connect()
 
         self.rememberpasswordvar = BooleanVar()
-        self.rememberpassword = Checkbutton(master, text="Se souvenir des identifiants ?", var=self.rememberpasswordvar)
+        self.rememberpassword = Checkbutton(master, text="Mémoriser identifiants ?", var=self.rememberpasswordvar)
         self.rememberpassword.configure(state='normal')
         # Bouton pour savoir si on mémorise le user/mdp
 
         self.charList = Listbox(master)
 
-        self.fucktkinterlol.pack()
-        self.server.pack()
-        self.fucktkinter0.pack()
-        self.username.pack()
-        self.fucktkinter.pack()
-        self.password.pack()
-        self.fucktkinter2.pack()
+        self.connected_ppllabel.pack()
+        self.server.place(x=17, y=20)
+        self.username.place(x=17, y=60)
+        self.password.place(x=17, y=80)
         if system() == "Linux":
-            self.fucktkinter99.pack()
-            self.winecfg_button.place(x=10, y=140)
-            self.connect_button.place(x=110, y=140)
+            self.winecfg_button.place(x=13, y=110)
+            self.connect_button.place(x=93, y=110)
         else:
-            self.connect_button.pack()
+            self.connect_button.place(x=50, y=110)
         # si l'utilisateur utilise Linux on ajoute un label pour faire de la place, et 2 boutons (connect, winecfg)
         # sinon on pack normalement le bouton connect
-        self.rememberpassword.pack()
-        self.charList.pack()
+        self.rememberpassword.place(x=5, y=140)
+        self.charList.place(x=17, y=165)
         # On pack tout
 
         self.token = "AmtenaelLinux"  # on prépare la variable qui sera modifié pendant preconnect()
@@ -163,6 +115,9 @@ class AmtenaelLauncher:
         self.preconnect("login")  # peupler charList avant d'afficher la fenetre
         self.charList.insert(0, "Selection de royaume")  # On ajoute la premiere ligne
         self.password.bind('<Return>', self.preconnect)  # On dit a tkinter que si un utilisateur appuie sur <Return> (entrée), le quicklogin se lance
+
+        threading.Thread(target=self.CheckFiles).start()
+        # on vérifie les fichiers du jeu
 
     def connect(self):
         try:
@@ -179,18 +134,17 @@ class AmtenaelLauncher:
                 self.startGame("connect.exe game.dll " + self.server.get() + " " + self.username.get() + " " + self.password.get())
             else:
                 self.startGame("connect.exe game.dll " + self.server.get() + " " + self.username.get() + " " + self.token + " " + charListSelect)
-            # Ici on execute connect.exe sois vers la selection du royaume soit en connexion directe sur un personnage
+            # Ici on execute connect.exe soit vers la selection du royaume soit en connexion directe sur un personnage
 
             if self.rememberpasswordvar.get():
-                with open("launcher.dat", "w") as f:
-                    i = 0
+                with open("launcher.dat", "wb") as f:
                     lines = [
                         self.token,
                         self.username.get(),
                         self.password.get()
                     ]
-                    while i < len(lines):
-                        f.writelines(lines[i] + "\n")
+                    for i in lines:
+                        f.writelines(i + "\n")
                         i += 1
                     f.close()
         else:
@@ -234,7 +188,7 @@ class AmtenaelLauncher:
             # On envoie au serveur la requete
 
             char = s.recv(1024).decode().splitlines()
-            # on recupere la réponse du serveur, et on la transforme directement en string
+            # on recupere la réponse du serveur, et on la transforme directement en array
             s.close()
             # et on oublie pas de fermer la connection et on va s'en servir pour remplir le widget charList
 
@@ -244,18 +198,20 @@ class AmtenaelLauncher:
             # dans le cas ou le serveur nous renvoie une erreur, abandonner ici
 
             self.token = char[0]  # on a besoin de la premiere ligne pour se connecter plus tard
-
-            with open("launcher.dat", "r") as f:
-                lines = f.read().splitlines()
-                lines[0] = self.token
-                f.close()
-            with open("launcher.dat", "w") as f:
-                i = 1
-                f.writelines(lines[0]+"\n")
-                while i < len(lines):
-                    f.writelines(lines[i]+"\n")
-                    i+=1
-                f.close()
+            if os.path.exists("launcher.dat"):
+                with open("launcher.dat", "r") as f:
+                    lines = f.read().splitlines()
+                    lines[0] = self.token
+                    f.close()
+                with open("launcher.dat", "w") as f:
+                    f.writelines(lines[0]+"\n")
+                    for i in lines:
+                        f.writelines(i+"\n")
+                    f.close()
+            else:
+                with open("launcher.dat", "w") as f:
+                    f.write(self.token)
+                    f.close()
             # on lit launcher.dat, si il y a deja du contenu dedans (token\nnom d'utilisateur\nmot de passe)
             # on modifie la premiere ligne (le token) en ajoutant le nouveau token de connexion
             # (un nouveau token par preconnect())
@@ -283,18 +239,58 @@ class AmtenaelLauncher:
                 self.usernamevar.set(lines[1])
                 self.passwordvar.set(lines[2])
                 print("Mot de passe pour", lines[1], "trouvé")
-                # self.rememberpassword.toggle()
+                self.rememberpassword.toggle()
                 f.close()
         except (FileNotFoundError, KeyError, IndexError):
             print("Aucun mot de passe enregistré")
+
+    def CheckFiles(self):
+        self.connect_button.config(state="disabled", text="Checking files")
+        files = requests.get("https://amtenael.fr/launcher/launcher.txt", headers=curlheader)
+        filesstr = files.text
+        # maintenant on a le fichier qui nous indique quel fichier verifier
+
+        for i in filesstr.splitlines():
+            # je sais que ca pourrais etre plus simple avec une boucle for mais j'aime pas ca ><
+            line = i.split(";")
+
+            filename = line[0]
+            url = line[1]
+            hash = line[2]
+
+            try:
+                localhash = md5(open(filename, "rb").read()).hexdigest()
+            except FileNotFoundError:
+                localhash = 0
+                # dans le cas ou le fichier n'existe pas, on met le hash a une valeur de merde
+                # pour faire rater le check dans tous les cas
+
+            if hash == localhash:
+                print(filename, "est correct")
+                # debug mais on va y laisser la :p
+            else:
+                print(filename, "n'est pas correct, téléchargement en cours...")
+                newfile = requests.get(url)
+
+                try:
+                    with open(filename, "wb") as localfile:
+                        localfile.write(newfile.content)
+                    # telechargement du nouveau fichier
+                except FileNotFoundError:
+                    pathtocreate = "./"
+                    for folder in filename.split("/")[:-1]:
+                        pathtocreate += folder + "/"
+                    os.makedirs(pathtocreate)
+                    with open(filename, "wb") as localfile:
+                        localfile.write(newfile.content)
+                    # si on a une erreur de fichier qui n'existe pas on va creer les dossiers et creer le fichier
+
+        self.connect_button.config(state="normal", text="Connexion")
 
 
 try:
     root = Tk()
     window = AmtenaelLauncher(root)
-
-    CheckFiles()
-    # On vérifie les fichiers avant d'afficher le launcher
 
     root.mainloop()
     # On lance la fenetre
@@ -302,7 +298,7 @@ except KeyboardInterrupt:
     exit(0)
 except requests.exceptions.SSLError as e:
     print(e)
-    messagebox.showerror("Erreur", "Le certificat SSL de la réponse de amtenael.fr n'est pas correct, changez la variable SSLImportant au début du fichier pour ne pas vérifier le certificat")
+    messagebox.showerror("Erreur", "Le certificat SSL de la réponse de amtenael.fr n'est pas correct")
 except requests.exceptions.HTTPError as e:
     print(e)
     messagebox.showerror("Erreur", "AmtenaelLauncher a reçu un code de réponse HTTP invalide")
@@ -313,4 +309,4 @@ except requests.exceptions.ConnectionError as e:
     exit(-1)
 except IOError as e:
     print(e)
-    messagebox.showerror("Erreur", "AmtenaelLauncher n'a pas été capapble d'écrire ou de lire sur le disque dur")
+    messagebox.showerror("Erreur", "AmtenaelLauncher n'a pas été capable d'écrire ou de lire sur le disque dur")

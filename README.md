@@ -1,5 +1,5 @@
 # Amtenael Linux
-Launcher pour le jeu Dark Age of Camelot (plus particulièrement, le serveur [Amtenael](https://amtenael.fr)) visant a imiter le fonctionnement de `Patcher.exe` (launcher officiel).
+Launcher pour le jeu Dark Age of Camelot (plus particulièrement, le serveur [Amtenael](https://amtenael.fr)) visant a imiter le fonctionnement de launcher officiel.
 
 ![Screenshot depuis Linux](screenshot/linux.png "Linux")
 ![Screenshot depuis Windows](screenshot/windows.png "Windows")
