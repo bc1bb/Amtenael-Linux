@@ -3,6 +3,7 @@
 # Jus de Patate | Aingeth - 2020
 # L'objectif est de mimer le comportement du launcher officiel (disponible uniquement sur Windows) de Amtenael
 from hashlib import md5
+
 # import de la verification de hash md5
 import os
 import socket
@@ -19,6 +20,7 @@ except ImportError:
 try:
     from tkinter import *
     from tkinter import messagebox
+
     # import de tkinter pour faire des fenetres
 except ImportError:
     print("Erreur a l'import de tkinter, Est-il installé ? Utilisez-vous Python 3.x ?")
@@ -28,20 +30,22 @@ try:
     open("game.dll").close()
     # On essaie d'ouvrir le fichier game.dll et de le refermer pour voir si il existe (installation valide ou pas)
 except FileNotFoundError:
-    print("On dirait que AmtenaelLauncher n'est pas dans un dossier avec une installation valide de Dark Age of Camelot")
+    print(
+        "On dirait que AmtenaelLauncher n'est pas dans un dossier avec une installation valide de Dark Age of Camelot"
+    )
     exit(-1)
 
 version = "1.5"
 
 curlheader = {
-    'User-Agent': "AmtenaelLauncher-linux/" + version,
+    "User-Agent": "AmtenaelLauncher-linux/" + version,
 }
 
 
 class AmtenaelLauncher:
     def __init__(self, master):
         self.master = master
-        master.title("AmtenaelLauncher "+version)
+        master.title("AmtenaelLauncher " + version)
         master.minsize(200, 350)
         master.resizable(False, False)
         # creation d'une fenetre 200x350 qui ne peut pas changer de taille
@@ -50,7 +54,7 @@ class AmtenaelLauncher:
         # logo de Amtenael en 256x256 en base64 au format PNG
 
         icon = PhotoImage(data=icon_b64)
-        master.tk.call('wm', 'iconphoto', root._w, icon)
+        master.tk.call("wm", "iconphoto", root._w, icon)
         # maintenant on dit a tkinter que icon_b64 est l'icon de la fenetre
 
         url = "https://server1.amtenael.fr/json.php"
@@ -61,7 +65,7 @@ class AmtenaelLauncher:
         # maintenant on prends le nombre de gens connecté on met dans la variable connected
 
         self.connected_ppl = StringVar()
-        self.connected_ppl.set(connected+" personnages connectés")
+        self.connected_ppl.set(connected + " personnages connectés")
         self.connected_ppllabel = Label(master, textvariable=self.connected_ppl)
         # et on met le nombre de gens connecté dans le label qui servai a faire de la place avant :D (ce qui explique son nom)
 
@@ -88,8 +92,10 @@ class AmtenaelLauncher:
         # bouton de connexion qui appelle la fonction connect()
 
         self.rememberpasswordvar = BooleanVar()
-        self.rememberpassword = Checkbutton(master, text="Mémoriser identifiants ?", var=self.rememberpasswordvar)
-        self.rememberpassword.configure(state='normal')
+        self.rememberpassword = Checkbutton(
+            master, text="Mémoriser identifiants ?", var=self.rememberpasswordvar
+        )
+        self.rememberpassword.configure(state="normal")
         # Bouton pour savoir si on mémorise le user/mdp
 
         self.charList = Listbox(master)
@@ -114,7 +120,9 @@ class AmtenaelLauncher:
         self.checkCreds()  # on verifie que les identifiants ne sont pas sauvegardé
         self.preconnect("login")  # peupler charList avant d'afficher la fenetre
         self.charList.insert(0, "Selection de royaume")  # On ajoute la premiere ligne
-        self.password.bind('<Return>', self.preconnect)  # On dit a tkinter que si un utilisateur appuie sur <Return> (entrée), le quicklogin se lance
+        self.password.bind(
+            "<Return>", self.preconnect
+        )  # On dit a tkinter que si un utilisateur appuie sur <Return> (entrée), le quicklogin se lance
 
         threading.Thread(target=self.CheckFiles).start()
         # on vérifie les fichiers du jeu
@@ -131,24 +139,38 @@ class AmtenaelLauncher:
             print("Connexion avec", self.username.get(), "sur Amtenael")
 
             if charListSelect == "Selection de royaume":
-                self.startGame("connect.exe game.dll " + self.server.get() + " " + self.username.get() + " " + self.password.get())
+                self.startGame(
+                    "connect.exe game.dll "
+                    + self.server.get()
+                    + " "
+                    + self.username.get()
+                    + " "
+                    + self.password.get()
+                )
             else:
-                self.startGame("connect.exe game.dll " + self.server.get() + " " + self.username.get() + " " + self.token + " " + charListSelect)
+                self.startGame(
+                    "connect.exe game.dll "
+                    + self.server.get()
+                    + " "
+                    + self.username.get()
+                    + " "
+                    + self.token
+                    + " "
+                    + charListSelect
+                )
             # Ici on execute connect.exe soit vers la selection du royaume soit en connexion directe sur un personnage
 
             if self.rememberpasswordvar.get():
                 with open("launcher.dat", "wb") as f:
-                    lines = [
-                        self.token,
-                        self.username.get(),
-                        self.password.get()
-                    ]
+                    lines = [self.token, self.username.get(), self.password.get()]
                     for i in lines:
                         f.writelines(i + "\n")
                         i += 1
                     f.close()
         else:
-            messagebox.showerror("Erreur", "Veuillez rentrer un nom d'utilisateur et un mot de passe")
+            messagebox.showerror(
+                "Erreur", "Veuillez rentrer un nom d'utilisateur et un mot de passe"
+            )
 
     def preconnect(self, event):
         # on est obligé d'indiquer que preconnect() prend un deuxieme argument parce que tkinter donne 2 arguments a
@@ -162,13 +184,21 @@ class AmtenaelLauncher:
             nl = "\n"
 
             try:
-                uniqueId=open("/etc/machine-id").read().split("\n")[0]
+                uniqueId = open("/etc/machine-id").read().split("\n")[0]
             except:
-                print("Impossible de lire machine-id pour que le serveur identifie le client")
-                uniqueId="AmtenaelLauncher-linux\\"+version
+                print(
+                    "Impossible de lire machine-id pour que le serveur identifie le client"
+                )
+                uniqueId = "AmtenaelLauncher-linux\\" + version
 
-            tosend = self.username.get().encode("utf-8") + nl.encode("utf-8") + self.password.get().encode("utf-8") + \
-                     nl.encode("utf-8") + uniqueId.encode("utf-8") + nl.encode("utf-8")
+            tosend = (
+                self.username.get().encode("utf-8")
+                + nl.encode("utf-8")
+                + self.password.get().encode("utf-8")
+                + nl.encode("utf-8")
+                + uniqueId.encode("utf-8")
+                + nl.encode("utf-8")
+            )
             # ici nous preparons la requete a faire au serveur
 
             # Et maintenant voici l'instant documentation en plein milieu du code du launcher:
@@ -193,20 +223,22 @@ class AmtenaelLauncher:
             # et on oublie pas de fermer la connection et on va s'en servir pour remplir le widget charList
 
             if char[0].startswith("error:"):
-                messagebox.showwarning("Erreur", "Réponse du serveur:\n"+char[0])
+                messagebox.showwarning("Erreur", "Réponse du serveur:\n" + char[0])
                 return False
             # dans le cas ou le serveur nous renvoie une erreur, abandonner ici
 
-            self.token = char[0]  # on a besoin de la premiere ligne pour se connecter plus tard
+            self.token = char[
+                0
+            ]  # on a besoin de la premiere ligne pour se connecter plus tard
             if os.path.exists("launcher.dat"):
                 with open("launcher.dat", "r") as f:
                     lines = f.read().splitlines()
                     lines[0] = self.token
                     f.close()
                 with open("launcher.dat", "w") as f:
-                    f.writelines(lines[0]+"\n")
+                    f.writelines(lines[0] + "\n")
                     for i in lines:
-                        f.writelines(i+"\n")
+                        f.writelines(i + "\n")
                     f.close()
             else:
                 with open("launcher.dat", "w") as f:
@@ -220,13 +252,14 @@ class AmtenaelLauncher:
             while i < len(char):
                 self.charList.insert(i, char[i])
 
-                i+=1
+                i += 1
 
     def startGame(self, command):
         if system() == "Windows":
             os.system(command)
         else:
-            os.system("wine "+command)
+            os.system("wine " + command)
+
     # si l'utilisateur a Windows, alors executer la commande, sinon utiliser wine pour executer la commande
 
     def winecfg(self):
@@ -234,7 +267,7 @@ class AmtenaelLauncher:
 
     def checkCreds(self):
         try:
-            with open('launcher.dat') as f:
+            with open("launcher.dat") as f:
                 lines = f.read().splitlines()
                 self.usernamevar.set(lines[1])
                 self.passwordvar.set(lines[2])
@@ -245,8 +278,10 @@ class AmtenaelLauncher:
             print("Aucun mot de passe enregistré")
 
     def CheckFiles(self):
-        self.connect_button.config(state="disabled", text="Checking files")
-        files = requests.get("https://amtenael.fr/launcher/launcher.txt", headers=curlheader)
+        self.connect_button.config(state="disabled", text="Vérification...")
+        files = requests.get(
+            "https://amtenael.fr/launcher/launcher.txt", headers=curlheader
+        )
         filesstr = files.text
         # maintenant on a le fichier qui nous indique quel fichier verifier
 
@@ -298,15 +333,25 @@ except KeyboardInterrupt:
     exit(0)
 except requests.exceptions.SSLError as e:
     print(e)
-    messagebox.showerror("Erreur", "Le certificat SSL de la réponse de amtenael.fr n'est pas correct")
+    messagebox.showerror(
+        "Erreur", "Le certificat SSL de la réponse de amtenael.fr n'est pas correct"
+    )
 except requests.exceptions.HTTPError as e:
     print(e)
-    messagebox.showerror("Erreur", "AmtenaelLauncher a reçu un code de réponse HTTP invalide")
+    messagebox.showerror(
+        "Erreur", "AmtenaelLauncher a reçu un code de réponse HTTP invalide"
+    )
     exit(-1)
 except requests.exceptions.ConnectionError as e:
     print(e)
-    messagebox.showerror("Erreur", "AmtenaelLauncher n'a pas été capable de recuperer les fichiers depuis amtenael.fr")
+    messagebox.showerror(
+        "Erreur",
+        "AmtenaelLauncher n'a pas été capable de recuperer les fichiers depuis amtenael.fr",
+    )
     exit(-1)
 except IOError as e:
     print(e)
-    messagebox.showerror("Erreur", "AmtenaelLauncher n'a pas été capable d'écrire ou de lire sur le disque dur")
+    messagebox.showerror(
+        "Erreur",
+        "AmtenaelLauncher n'a pas été capable d'écrire ou de lire sur le disque dur",
+    )

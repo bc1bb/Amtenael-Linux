@@ -1,5 +1,6 @@
 # Amtenael Linux
-Launcher pour le jeu Dark Age of Camelot (plus particulièrement, le serveur [Amtenael](https://amtenael.fr)) visant a imiter le fonctionnement de launcher officiel.
+<a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+<br>Launcher pour le jeu Dark Age of Camelot (plus particulièrement, le serveur [Amtenael](https://amtenael.fr)) visant a imiter le fonctionnement de launcher officiel.
 
 ![Screenshot depuis Linux](screenshot/linux.png "Linux")
 ![Screenshot depuis Windows](screenshot/windows.png "Windows")
